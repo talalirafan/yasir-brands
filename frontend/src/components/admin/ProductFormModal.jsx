@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { FiX } from 'react-icons/fi';
 import api from '../../api/client';
 
 const emptyForm = {
@@ -11,7 +12,7 @@ const emptyForm = {
   stock: '',
   size: '100ml',
   notes: '',
-  images: '',
+  images: [],
 };
 
 function slugify(name) {
@@ -40,7 +41,7 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
         stock: product.stock ?? '',
         size: product.size || '100ml',
         notes: (product.notes || []).join(', '),
-        images: (product.images || []).join(', '),
+        images: product.images || [],
       });
     } else {
       setForm(emptyForm);
@@ -62,13 +63,17 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
       const body = new FormData();
       body.append('file', file);
       const { data } = await api.post('/upload', body);
-      setForm((f) => ({ ...f, images: data.url }));
+      setForm((f) => ({ ...f, images: [...f.images, data.url] }));
       toast.success('Image uploaded');
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to upload image');
     } finally {
       setUploading(false);
     }
+  };
+
+  const removeImage = (idx) => {
+    setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== idx) }));
   };
 
   const onSubmit = async (e) => {
@@ -83,7 +88,7 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
       stock: Number(form.stock),
       size: form.size,
       notes: form.notes.split(',').map((n) => n.trim()).filter(Boolean),
-      images: form.images.split(',').map((n) => n.trim()).filter(Boolean),
+      images: form.images,
     };
     try {
       if (isEdit) {
@@ -154,7 +159,7 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
             <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Oud, Amber, Musk" className={inputClass} />
           </div>
           <div>
-            <label className="block text-sm text-black/60 mb-1">Product Image</label>
+            <label className="block text-sm text-black/60 mb-1">Product Images</label>
             <input
               ref={fileInputRef}
               type="file"
@@ -162,22 +167,30 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
               onChange={onFileSelected}
               className="hidden"
             />
-            <button
-              type="button"
-              onClick={onPickImage}
-              disabled={uploading}
-              className="w-full border border-dashed border-black/25 rounded-lg overflow-hidden hover:border-[var(--color-gold)] transition-colors disabled:opacity-50"
-            >
-              {form.images ? (
-                <img src={form.images.split(',')[0].trim()} alt="Product" className="w-full h-40 object-cover" />
-              ) : (
-                <div className="h-40 flex flex-col items-center justify-center text-black/40 text-sm gap-1">
-                  <span>{uploading ? 'Uploading...' : 'Click to choose an image from your computer'}</span>
+            <div className="grid grid-cols-4 gap-2 mb-2">
+              {form.images.map((img, i) => (
+                <div key={img + i} className="relative aspect-square rounded overflow-hidden border">
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1"
+                  >
+                    <FiX size={11} />
+                  </button>
                 </div>
-              )}
-            </button>
-            {form.images && (
-              <p className="text-xs text-black/40 mt-1 truncate">{form.images}</p>
+              ))}
+              <button
+                type="button"
+                onClick={onPickImage}
+                disabled={uploading}
+                className="aspect-square border border-dashed border-black/25 rounded flex items-center justify-center text-black/40 text-xs hover:border-[var(--color-gold)] transition-colors disabled:opacity-50"
+              >
+                {uploading ? '...' : '+ Add'}
+              </button>
+            </div>
+            {form.images.length === 0 && (
+              <p className="text-xs text-black/40">No images yet — click "+ Add" to upload from your computer.</p>
             )}
           </div>
           <div className="flex gap-3 pt-2">

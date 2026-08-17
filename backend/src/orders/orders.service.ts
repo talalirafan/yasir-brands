@@ -6,6 +6,7 @@ import { Product, ProductDocument } from '../products/schemas/product.schema';
 import { Cart, CartDocument } from '../cart/schemas/cart.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { CouponsService } from '../coupons/coupons.service';
 
 const DELIVERY_FEE = 250;
 const FREE_DELIVERY_THRESHOLD = 5000;
@@ -17,6 +18,7 @@ export class OrdersService {
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     @InjectModel(Cart.name) private cartModel: Model<CartDocument>,
     private notificationsService: NotificationsService,
+    private couponsService: CouponsService,
   ) {}
 
   private generateOrderNumber() {
@@ -37,8 +39,16 @@ export class OrdersService {
       subtotal += product.price * item.qty;
     }
 
+    let discount = 0;
+    let couponCode: string | undefined;
+    if (dto.couponCode) {
+      const result = await this.couponsService.validate(dto.couponCode, subtotal);
+      discount = result.discount;
+      couponCode = result.code;
+    }
+
     const delivery = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-    const total = subtotal + delivery;
+    const total = Math.max(subtotal + delivery - discount, 0);
 
     const order = await this.orderModel.create({
       orderNumber: this.generateOrderNumber(),
@@ -46,6 +56,8 @@ export class OrdersService {
       items,
       subtotal,
       delivery,
+      couponCode,
+      discount,
       total,
       fullName: dto.fullName,
       phone: dto.phone,
@@ -94,6 +106,38 @@ export class OrdersService {
     }
     const order = await this.orderModel.findByIdAndUpdate(id, { status }, { new: true });
     if (!order) throw new NotFoundException('Order not found');
+    return order;
+  }
+
+  /** Customer-initiated cancel — only allowed while the order hasn't shipped yet. */
+  async cancelByCustomer(userId: string, id: string) {
+    const order = await this.orderModel.findOne({ _id: id, user: userId });
+    if (!order) throw new NotFoundException('Order not found');
+    if (!['Pending', 'Confirmed'].includes(order.status)) {
+      throw new BadRequestException('This order can no longer be cancelled');
+    }
+
+    order.status = 'Cancelled';
+    await order.save();
+
+    for (const item of order.items) {
+      await this.productModel.findByIdAndUpdate(item.product, { $inc: { stock: item.qty } });
+    }
+
+    return order;
+  }
+
+  /** Customer-initiated return request — only for delivered orders. */
+  async requestReturn(userId: string, id: string, reason: string) {
+    const order = await this.orderModel.findOne({ _id: id, user: userId });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.status !== 'Delivered') {
+      throw new BadRequestException('Only delivered orders can be returned');
+    }
+
+    order.status = 'Return Requested';
+    order.notes = `${order.notes ? order.notes + ' | ' : ''}Return reason: ${reason}`;
+    await order.save();
     return order;
   }
 }

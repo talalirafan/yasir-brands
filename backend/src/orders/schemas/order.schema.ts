@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 
 export type OrderDocument = HydratedDocument<Order>;
 
@@ -11,11 +11,13 @@ export const ORDER_STATUSES = [
   'Out for Delivery',
   'Delivered',
   'Cancelled',
+  'Return Requested',
+  'Returned',
 ] as const;
 
 @Schema({ _id: false })
 class OrderItem {
-  @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Product', required: true })
   product: Types.ObjectId;
 
   @Prop({ required: true })
@@ -33,7 +35,7 @@ export class Order {
   @Prop({ required: true, unique: true })
   orderNumber: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
 
   @Prop({ type: [OrderItem], required: true })
@@ -44,6 +46,12 @@ export class Order {
 
   @Prop({ required: true, default: 0 })
   delivery: number;
+
+  @Prop()
+  couponCode?: string;
+
+  @Prop({ default: 0 })
+  discount: number;
 
   @Prop({ required: true })
   total: number;

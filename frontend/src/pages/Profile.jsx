@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { FiPackage, FiLogOut } from 'react-icons/fi';
 import api from '../api/client';
 import { useAuthStore } from '../store/cartStore';
+import SavedAddresses from '../components/SavedAddresses';
 
 export default function Profile() {
   const { user, logout, login, token } = useAuthStore();
@@ -103,6 +104,8 @@ export default function Profile() {
           </button>
         </div>
       </div>
+
+      <SavedAddresses />
     </div>
   );
 }

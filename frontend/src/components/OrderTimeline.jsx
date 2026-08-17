@@ -1,4 +1,4 @@
-import { FiCheck, FiX } from 'react-icons/fi';
+import { FiCheck, FiX, FiRotateCcw } from 'react-icons/fi';
 
 const STEPS = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered'];
 
@@ -10,6 +10,19 @@ export default function OrderTimeline({ status }) {
           <FiX size={16} />
         </div>
         <p className="text-red-700 font-medium">This order was cancelled</p>
+      </div>
+    );
+  }
+
+  if (status === 'Return Requested' || status === 'Returned') {
+    return (
+      <div className="flex items-center gap-3 border border-[var(--color-gold)]/40 bg-[var(--color-gold)]/5 rounded-lg p-4">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-gold)] text-black flex items-center justify-center shrink-0">
+          <FiRotateCcw size={15} />
+        </div>
+        <p className="font-medium">
+          {status === 'Return Requested' ? 'Return requested — awaiting review' : 'Order returned'}
+        </p>
       </div>
     );
   }

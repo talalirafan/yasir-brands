@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { FiShoppingBag, FiEdit2, FiCopy, FiCheckCircle } from 'react-icons/fi';
+import { FiShoppingBag, FiEdit2, FiCopy, FiTag, FiX } from 'react-icons/fi';
 import api from '../api/client';
 import { useCartStore } from '../store/cartStore';
 import CheckoutStepper from '../components/CheckoutStepper';
@@ -21,14 +21,56 @@ export default function Checkout() {
   const { items, clearCart } = useCartStore();
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const delivery = subtotal >= 5000 ? 0 : 250;
-  const total = subtotal + delivery;
   const navigate = useNavigate();
   const [reviewing, setReviewing] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [couponInput, setCouponInput] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [coupon, setCoupon] = useState(null); // { code, discount }
   const [form, setForm] = useState({
     fullName: '', phone: '', city: '', area: '', address: '', postalCode: '', notes: '',
     paymentMethod: 'COD', senderNumber: '', transactionId: '',
   });
+
+  const discount = coupon?.discount || 0;
+  const total = Math.max(subtotal + delivery - discount, 0);
+
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  useEffect(() => {
+    api.get('/addresses').then((res) => setSavedAddresses(res.data)).catch(() => {});
+  }, []);
+
+  const useSavedAddress = (a) => {
+    setForm((f) => ({
+      ...f,
+      fullName: a.fullName,
+      phone: a.phone,
+      city: a.city,
+      area: a.area,
+      address: a.address,
+      postalCode: a.postalCode || '',
+    }));
+    toast.success('Address filled in');
+  };
+
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setApplyingCoupon(true);
+    try {
+      const { data } = await api.post('/coupons/validate', { code: couponInput.trim(), subtotal });
+      setCoupon({ code: data.code, discount: data.discount });
+      toast.success(`Coupon applied: -Rs. ${data.discount.toLocaleString()}`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Invalid coupon code');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCoupon(null);
+    setCouponInput('');
+  };
 
   const addressComplete = ['fullName', 'phone', 'city', 'area', 'address'].every((k) => form[k].trim());
   const isWalletPayment = form.paymentMethod !== 'COD';
@@ -50,7 +92,7 @@ export default function Checkout() {
     try {
       const { data } = await api.post('/orders', {
         items: items.map((i) => ({ product: i._id, qty: i.qty, price: i.price })),
-        subtotal, delivery, total, ...form,
+        subtotal, delivery, total, couponCode: coupon?.code, ...form,
       });
       clearCart();
       toast.success('Order placed!');
@@ -106,6 +148,9 @@ export default function Checkout() {
             <div className="border-t mt-2 pt-2 space-y-1 text-sm">
               <div className="flex justify-between"><span>Subtotal</span><span>Rs. {subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between"><span>Delivery</span><span>{delivery === 0 ? 'Free' : `Rs. ${delivery}`}</span></div>
+              {coupon && (
+                <div className="flex justify-between text-green-600"><span>Coupon ({coupon.code})</span><span>-Rs. {discount.toLocaleString()}</span></div>
+              )}
               <div className="flex justify-between font-semibold text-base"><span>Total</span><span>Rs. {total.toLocaleString()}</span></div>
             </div>
           </div>
@@ -143,6 +188,22 @@ export default function Checkout() {
         <div className="grid md:grid-cols-3 gap-8">
           <form onSubmit={onReview} className="md:col-span-2 space-y-4 text-left">
             <h1 className="text-2xl font-semibold mb-4">Checkout</h1>
+
+            {savedAddresses.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {savedAddresses.map((a) => (
+                  <button
+                    key={a._id}
+                    type="button"
+                    onClick={() => useSavedAddress(a)}
+                    className="text-xs border rounded-full px-3 py-1.5 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors"
+                  >
+                    Use: {a.fullName} — {a.city}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <input required placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inputClass} />
             <input required placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
             <div className="grid grid-cols-2 gap-4">
@@ -240,8 +301,38 @@ export default function Checkout() {
                 <span>Rs. {(i.price * i.qty).toLocaleString()}</span>
               </div>
             ))}
+
+            {coupon ? (
+              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded px-3 py-2 my-3 text-sm">
+                <span className="flex items-center gap-1 text-green-700"><FiTag size={13} /> {coupon.code} applied</span>
+                <button type="button" onClick={removeCoupon} className="text-green-700 hover:text-red-500">
+                  <FiX size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2 my-3">
+                <input
+                  placeholder="Coupon code"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  className="flex-1 border rounded px-3 py-1.5 text-sm focus:outline-none focus:border-[var(--color-gold)]"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={applyingCoupon}
+                  className="border border-black rounded px-3 py-1.5 text-sm hover:bg-black hover:text-white transition-colors disabled:opacity-50"
+                >
+                  {applyingCoupon ? '...' : 'Apply'}
+                </button>
+              </div>
+            )}
+
             <div className="flex justify-between mb-2 text-sm border-t pt-2"><span>Subtotal</span><span>Rs. {subtotal.toLocaleString()}</span></div>
             <div className="flex justify-between mb-2 text-sm"><span>Delivery</span><span>{delivery === 0 ? 'Free' : `Rs. ${delivery}`}</span></div>
+            {coupon && (
+              <div className="flex justify-between mb-2 text-sm text-green-600"><span>Discount</span><span>-Rs. {discount.toLocaleString()}</span></div>
+            )}
             <div className="flex justify-between font-semibold text-lg border-t pt-3"><span>Total</span><span>Rs. {total.toLocaleString()}</span></div>
           </div>
         </div>

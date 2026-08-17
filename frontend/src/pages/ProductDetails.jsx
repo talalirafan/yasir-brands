@@ -2,7 +2,8 @@ import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchProductBySlug, fetchProducts } from '../api/products';
 import ProductCard from '../components/ProductCard';
-import ZoomableProductImage from '../components/ZoomableProductImage';
+import ProductGallery from '../components/ProductGallery';
+import ProductReviews from '../components/ProductReviews';
 import Loading from '../components/Loading';
 import ErrorState from '../components/ErrorState';
 import { useCartStore } from '../store/cartStore';
@@ -48,9 +49,7 @@ export default function ProductDetails() {
   return (
     <div>
       <div className="grid md:grid-cols-2 gap-8 mb-12">
-        <div className="aspect-square bg-[var(--color-cream)] rounded-lg overflow-hidden">
-          <ZoomableProductImage product={product} />
-        </div>
+        <ProductGallery product={product} />
         <div className="text-left">
           <h1 className="text-3xl font-semibold mb-2">{product.name}</h1>
           <p className="text-[var(--color-gold)] mb-4">★ {product.rating || 'No ratings yet'}</p>
@@ -100,6 +99,8 @@ export default function ProductDetails() {
           </div>
         </div>
       )}
+
+      <ProductReviews productId={product._id} />
     </div>
   );
 }

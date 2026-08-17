@@ -17,6 +17,7 @@ import { AdminModule } from './admin/admin.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
 import { ContactModule } from './contact/contact.module';
+import { CouponsModule } from './coupons/coupons.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ContactModule } from './contact/contact.module';
     NotificationsModule,
     UploadModule,
     ContactModule,
+    CouponsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -14,6 +14,8 @@ const statusColor = {
   'Out for Delivery': 'bg-purple-100 text-purple-700',
   Delivered: 'bg-green-100 text-green-700',
   Cancelled: 'bg-red-100 text-red-700',
+  'Return Requested': 'bg-amber-100 text-amber-700',
+  Returned: 'bg-amber-100 text-amber-700',
 };
 
 export default function MyOrders() {

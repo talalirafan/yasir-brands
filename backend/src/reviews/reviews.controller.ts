@@ -12,8 +12,14 @@ export class ReviewsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('can-review/:productId')
+  canReview(@Req() req: any, @Param('productId') productId: string) {
+    return this.reviewsService.canReview(req.user.userId, productId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() body: { product: string; rating: number; text: string }) {
-    return this.reviewsService.create(req.user.userId, req.user.email, body);
+    return this.reviewsService.create(req.user.userId, req.user.name || req.user.email, body);
   }
 }

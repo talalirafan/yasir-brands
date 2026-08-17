@@ -63,4 +63,8 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   transactionId?: string;
+
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
 }

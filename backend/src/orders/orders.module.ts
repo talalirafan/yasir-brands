@@ -7,6 +7,7 @@ import { Product, ProductSchema } from '../products/schemas/product.schema';
 import { Cart, CartSchema } from '../cart/schemas/cart.schema';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { CouponsModule } from '../coupons/coupons.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ]),
     AuthModule,
     NotificationsModule,
+    CouponsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
