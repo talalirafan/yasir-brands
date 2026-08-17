@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* Overrides Tailwind's built-in "black" token — every bg-black/text-black/border-black
+   utility across the app picks this up automatically, giving the whole site a new
+   deep-emerald base instead of pure black. */
+@theme {
+  --color-black: #0e211b;
+}
+
+:root {
+  --color-gold: #c6a25a;
+  --color-black: #0e211b;
+  --color-cream: #f6f1e6;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-black);
+}
+
+@keyframes badge-pop {
+  0% { transform: scale(0.5); }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.animate-badge-pop {
+  animation: badge-pop 0.35s ease-out;
+}
