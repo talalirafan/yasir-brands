@@ -24,7 +24,7 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen flex">
       <aside className="w-56 bg-black text-white p-4 flex flex-col">
-        <p className="text-[var(--color-gold)] font-semibold mb-4">YSR Admin</p>
+        <p className="text-[var(--color-gold)] font-semibold mb-4">Yasir Admin</p>
         <div className="space-y-2 flex-1">
           {links.map((l) => (
             <Link key={l.to} to={l.to} className="block text-sm py-2 hover:text-[var(--color-gold)]">

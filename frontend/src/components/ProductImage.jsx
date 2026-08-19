@@ -36,7 +36,7 @@ export default function ProductImage({ product, className = '' }) {
       style={{ background: gradient }}
     >
       <p className="uppercase tracking-[3px] text-[10px] text-[var(--color-gold)] mb-2">
-        YSR Fragrances
+        Yasir Fragrances
       </p>
       <p className="text-white text-xl font-semibold tracking-wide">{product.name}</p>
       <p className="text-white/50 text-xs mt-2">{product.size || '100ml'}</p>

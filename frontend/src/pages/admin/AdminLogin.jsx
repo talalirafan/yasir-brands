@@ -30,13 +30,13 @@ export default function AdminLogin() {
       <div className="relative hidden md:block overflow-hidden">
         <img
           src="/team/founder-2.jpg"
-          alt="YSR Fragrances"
+          alt="Yasir Fragrances"
           className="absolute inset-0 w-full h-full object-cover grayscale-[30%]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
         <div className="relative h-full flex flex-col justify-end p-10 text-left">
           <p className="uppercase tracking-[6px] text-[var(--color-gold)] text-xs mb-3">
-            YSR Fragrances
+            Yasir Fragrances
           </p>
           <h2 className="text-white text-3xl font-semibold leading-tight mb-2">
             Manage the store,<br />own the experience.

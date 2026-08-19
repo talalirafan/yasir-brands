@@ -40,7 +40,7 @@ export default function Signup() {
     <div className="max-w-sm mx-auto py-16">
       <div className="border border-black/10 rounded-xl p-8 shadow-sm bg-white">
         <p className="uppercase tracking-[4px] text-[var(--color-gold)] text-xs text-center mb-2">
-          Join YSR Fragrances
+          Join Yasir Fragrances
         </p>
         <h1 className="text-2xl font-semibold mb-6 text-center">Sign Up</h1>
         <form onSubmit={onSubmit} className="space-y-4 text-left">
