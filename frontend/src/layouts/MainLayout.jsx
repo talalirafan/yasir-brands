@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiMenu, FiX } from 'react-icons/fi';
+import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiMenu, FiX, FiInstagram, FiFacebook, FiMail, FiPhone } from 'react-icons/fi';
 import { useState } from 'react';
 import { useCartStore, useWishlistStore, useAuthStore } from '../store/cartStore';
 
@@ -40,13 +40,13 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-cream)]">
-      <header className="border-b border-black/10 bg-black text-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex items-center gap-3 sm:gap-6 px-4 py-2.5 sm:py-3">
+      <header className="bg-black text-white sticky top-0 z-40 shadow-[0_1px_0_0_rgba(198,162,90,0.25)]">
+        <div className="max-w-7xl mx-auto flex items-center gap-3 sm:gap-6 px-4 py-2.5 sm:py-3.5">
           <Link
             to="/"
-            className="text-base sm:text-xl font-semibold tracking-wide sm:tracking-widest text-[var(--color-gold)] transition-opacity hover:opacity-80 whitespace-nowrap shrink-0"
+            className="font-display text-lg sm:text-2xl font-semibold tracking-wide sm:tracking-[3px] text-[var(--color-gold)] transition-opacity hover:opacity-80 whitespace-nowrap shrink-0"
           >
-            YSR FRAGRANCES
+            YASIR FRAGRANCES
           </Link>
 
           <nav className="hidden md:flex gap-6 text-sm uppercase tracking-wide flex-1">
@@ -59,14 +59,14 @@ export default function MainLayout() {
 
           <form
             onSubmit={onSearch}
-            className="hidden md:flex items-center bg-white/10 rounded px-2 ring-1 ring-transparent focus-within:ring-[var(--color-gold)] focus-within:bg-white/15 transition-all"
+            className="hidden md:flex items-center bg-white/10 rounded-full px-3 ring-1 ring-white/10 focus-within:ring-[var(--color-gold)] focus-within:bg-white/15 transition-all"
           >
-            <FiSearch className="text-white/60" />
+            <FiSearch className="text-white/60" size={15} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search perfumes..."
-              className="bg-transparent px-2 py-1 text-sm outline-none placeholder:text-white/50 w-40 focus:w-52 transition-all"
+              className="bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-white/50 w-36 focus:w-52 transition-all"
             />
           </form>
 
@@ -128,8 +128,8 @@ export default function MainLayout() {
                 {l.label}
               </NavLink>
             ))}
-            <form onSubmit={onSearch} className="flex items-center bg-white/10 rounded px-2 mt-2">
-              <FiSearch className="text-white/60" />
+            <form onSubmit={onSearch} className="flex items-center bg-white/10 rounded-full px-3 mt-2">
+              <FiSearch className="text-white/60" size={15} />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -141,15 +141,72 @@ export default function MainLayout() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8">
         <Outlet />
       </main>
 
-      <footer className="bg-black text-white/70 mt-10">
-        <div className="max-w-7xl mx-auto px-4 py-8 text-sm">
-          <p className="text-[var(--color-gold)] text-lg mb-2">YSR FRAGRANCES</p>
-          <p>Luxury perfumes for him and her. Crafted to leave a lasting impression.</p>
-          <p className="mt-4">&copy; {new Date().getFullYear()} YSR Fragrances. All rights reserved.</p>
+      <footer className="bg-black text-white/70 mt-16">
+        <div className="max-w-7xl mx-auto px-4 py-12 grid gap-10 sm:grid-cols-2 md:grid-cols-4 text-sm">
+          <div>
+            <p className="font-display text-[var(--color-gold)] text-2xl tracking-wide mb-3">YASIR FRAGRANCES</p>
+            <p className="leading-relaxed text-white/60">
+              Luxury perfumes for him and her, crafted to leave a lasting impression.
+            </p>
+            <div className="flex gap-3 mt-4">
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/15 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors"
+              >
+                <FiInstagram size={15} />
+              </a>
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="w-8 h-8 flex items-center justify-center rounded-full border border-white/15 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors"
+              >
+                <FiFacebook size={15} />
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <p className="uppercase tracking-widest text-white/40 text-xs mb-4">Shop</p>
+            <ul className="space-y-2.5">
+              <li><Link to="/shop" className="hover:text-[var(--color-gold)] transition-colors">All Perfumes</Link></li>
+              <li><Link to="/for-him" className="hover:text-[var(--color-gold)] transition-colors">For Him</Link></li>
+              <li><Link to="/for-her" className="hover:text-[var(--color-gold)] transition-colors">For Her</Link></li>
+              <li><Link to="/wishlist" className="hover:text-[var(--color-gold)] transition-colors">Wishlist</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="uppercase tracking-widest text-white/40 text-xs mb-4">Company</p>
+            <ul className="space-y-2.5">
+              <li><Link to="/about" className="hover:text-[var(--color-gold)] transition-colors">About Us</Link></li>
+              <li><Link to="/contact" className="hover:text-[var(--color-gold)] transition-colors">Contact</Link></li>
+              <li><Link to="/orders" className="hover:text-[var(--color-gold)] transition-colors">Track Order</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="uppercase tracking-widest text-white/40 text-xs mb-4">Get in Touch</p>
+            <ul className="space-y-2.5">
+              <li className="flex items-center gap-2 text-white/60">
+                <FiMail size={14} className="text-[var(--color-gold)]" /> hello@ysrfragrances.com
+              </li>
+              <li className="flex items-center gap-2 text-white/60">
+                <FiPhone size={14} className="text-[var(--color-gold)]" /> +92 300 0000000
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-4 py-5 text-xs text-white/40 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>&copy; {new Date().getFullYear()} Yasir Fragrances. All rights reserved.</p>
+            <p className="tracking-wide">Crafted with care, worn with confidence.</p>
+          </div>
         </div>
       </footer>
     </div>
