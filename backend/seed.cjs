@@ -33,21 +33,21 @@ async function main() {
       size: '100ml', stock: 25, rating: 0, reviewCount: 0,
     },
     {
-      name: 'Rasko', slug: 'rasko', gender: 'boys', price: 3800,
+      name: 'Aura Oud', slug: 'aura-oud', gender: 'boys', price: 3800,
       description: 'Fresh and energetic, built for everyday confidence.',
-      images: [], notes: ['Citrus', 'Vetiver', 'Musk'],
+      images: ['/products/aura-oud.jpg'], notes: ['Citrus', 'Vetiver', 'Musk'],
       size: '100ml', stock: 18, rating: 0, reviewCount: 0,
     },
     {
-      name: 'ÉLITE', slug: 'elite', gender: 'boys', price: 5200,
+      name: 'Marj', slug: 'marj', gender: 'boys', price: 5200,
       description: 'A premium statement scent for those who lead.',
-      images: [], notes: ['Leather', 'Sandalwood', 'Bergamot'],
+      images: ['/products/marj.jpg'], notes: ['Leather', 'Sandalwood', 'Bergamot'],
       size: '100ml', stock: 12, rating: 0, reviewCount: 0,
     },
     {
-      name: 'ZAYNAR', slug: 'zaynar', gender: 'boys', price: 4200,
+      name: 'Ambassador', slug: 'ambassador', gender: 'boys', price: 4200,
       description: 'Warm and daring, a scent that commands attention.',
-      images: [], notes: ['Spice', 'Cedarwood', 'Tobacco'],
+      images: ['/products/ambazer.jpeg'], notes: ['Spice', 'Cedarwood', 'Tobacco'],
       size: '100ml', stock: 20, rating: 0, reviewCount: 0,
     },
     {
