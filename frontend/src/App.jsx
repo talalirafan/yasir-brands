@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import ScrollToTop from './components/ScrollToTop';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 
@@ -31,6 +32,7 @@ import AdminReviews from './pages/admin/Reviews';
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Toaster position="top-center" />
       <Routes>
         <Route element={<MainLayout />}>
