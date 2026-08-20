@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiMenu, FiX, FiInstagram, FiFacebook, FiMail, FiPhone } from 'react-icons/fi';
+import { FiSearch, FiHeart, FiShoppingCart, FiUser, FiMenu, FiX, FiInstagram, FiFacebook, FiMail, FiPhone } from 'react-icons/fi';
 import { useState } from 'react';
 import { useCartStore, useWishlistStore, useAuthStore } from '../store/cartStore';
 
@@ -83,7 +83,7 @@ export default function MainLayout() {
               )}
             </Link>
             <Link to="/cart" className={iconButtonClass} aria-label="Cart">
-              <FiShoppingBag size={19} />
+              <FiShoppingCart size={19} />
               {cartCount > 0 && (
                 <span
                   key={cartCount}
@@ -203,9 +203,8 @@ export default function MainLayout() {
         </div>
 
         <div className="border-t border-white/10">
-          <div className="max-w-7xl mx-auto px-4 py-5 text-xs text-white/40 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="max-w-7xl mx-auto px-4 py-5 text-xs text-white/40 text-center">
             <p>&copy; {new Date().getFullYear()} Yasir Fragrances. All rights reserved.</p>
-            <p className="tracking-wide">Crafted with care, worn with confidence.</p>
           </div>
         </div>
       </footer>

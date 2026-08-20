@@ -57,46 +57,48 @@ export default function OrderDetails() {
 
   return (
     <div className="max-w-2xl mx-auto text-left">
-      <div className="flex items-start justify-between mb-1">
-        <h1 className="text-2xl font-semibold">Order #{order.orderNumber}</h1>
-        {canCancel && (
-          <button onClick={cancelOrder} disabled={busy} className="text-sm text-red-500 hover:underline disabled:opacity-50">
-            Cancel Order
-          </button>
-        )}
-        {canReturn && (
-          <button onClick={requestReturn} disabled={busy} className="text-sm text-[var(--color-gold)] hover:underline disabled:opacity-50">
-            Request Return
-          </button>
-        )}
+      <div className="flex items-start justify-between mb-1 gap-4 flex-wrap">
+        <h1 className="font-display text-2xl sm:text-3xl font-semibold">Order #{order.orderNumber}</h1>
+        <div className="flex gap-3">
+          {canCancel && (
+            <button onClick={cancelOrder} disabled={busy} className="text-sm text-red-500 hover:underline disabled:opacity-50">
+              Cancel Order
+            </button>
+          )}
+          {canReturn && (
+            <button onClick={requestReturn} disabled={busy} className="text-sm text-[var(--color-gold)] hover:underline disabled:opacity-50">
+              Request Return
+            </button>
+          )}
+        </div>
       </div>
       <p className="text-sm text-black/50 mb-6">{new Date(order.createdAt).toLocaleDateString()}</p>
 
-      <div className="border rounded-lg p-5 mb-6">
+      <div className="border border-black/10 rounded-2xl p-5 mb-6 bg-white">
         <OrderTimeline status={order.status} />
       </div>
 
-      <p className="mb-2">
+      <p className="mb-2 text-sm">
         <strong>Payment:</strong> {order.paymentMethod}
         {order.senderNumber && ` (sent from ${order.senderNumber})`}
       </p>
       {order.transactionId && (
         <p className="mb-2 text-sm text-black/60"><strong>Transaction ID:</strong> {order.transactionId}</p>
       )}
-      <p className="mb-4"><strong>Address:</strong> {order.address}, {order.area}, {order.city}</p>
-      <div className="border rounded-lg divide-y">
+      <p className="mb-4 text-sm"><strong>Address:</strong> {order.address}, {order.area}, {order.city}</p>
+      <div className="border border-black/10 rounded-2xl divide-y divide-black/10 bg-white overflow-hidden">
         {order.items?.map((item, idx) => (
-          <div key={idx} className="flex justify-between p-3">
+          <div key={idx} className="flex justify-between p-4 text-sm">
             <span>{item.name} x{item.qty}</span>
-            <span>Rs. {(item.price * item.qty).toLocaleString()}</span>
+            <span className="font-medium">Rs. {(item.price * item.qty).toLocaleString()}</span>
           </div>
         ))}
       </div>
       <div className="text-right mt-4 space-y-1">
         {order.discount > 0 && (
-          <p className="text-sm text-green-600">Coupon discount: -Rs. {order.discount.toLocaleString()}</p>
+          <p className="text-sm text-emerald-600">Coupon discount: -Rs. {order.discount.toLocaleString()}</p>
         )}
-        <p className="font-semibold text-lg">Total: Rs. {order.total?.toLocaleString()}</p>
+        <p className="font-display font-semibold text-lg">Total: Rs. {order.total?.toLocaleString()}</p>
       </div>
     </div>
   );

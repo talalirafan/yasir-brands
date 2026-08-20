@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { FiShoppingBag, FiEdit2, FiCopy, FiTag, FiX } from 'react-icons/fi';
+import { FiShoppingBag, FiEdit2, FiCopy } from 'react-icons/fi';
 import api from '../api/client';
-import { useCartStore } from '../store/cartStore';
+import { useCartStore, useAuthStore } from '../store/cartStore';
 import CheckoutStepper from '../components/CheckoutStepper';
 import EmptyState from '../components/EmptyState';
 
@@ -15,30 +15,39 @@ const paymentOptions = [
   { id: 'JazzCash', label: 'JazzCash', hint: `Pay now via JazzCash to ${WALLET_NUMBER}` },
 ];
 
-const inputClass = 'w-full border rounded px-3 py-2 focus:outline-none focus:border-[var(--color-gold)]';
+const inputClass = 'w-full border border-black/15 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[var(--color-gold)] transition-colors';
 
 export default function Checkout() {
   const { items, clearCart } = useCartStore();
+  const user = useAuthStore((s) => s.user);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const delivery = subtotal >= 5000 ? 0 : 250;
   const navigate = useNavigate();
   const [reviewing, setReviewing] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [couponInput, setCouponInput] = useState('');
-  const [applyingCoupon, setApplyingCoupon] = useState(false);
-  const [coupon, setCoupon] = useState(null); // { code, discount }
   const [form, setForm] = useState({
     fullName: '', phone: '', city: '', area: '', address: '', postalCode: '', notes: '',
     paymentMethod: 'COD', senderNumber: '', transactionId: '',
   });
 
-  const discount = coupon?.discount || 0;
-  const total = Math.max(subtotal + delivery - discount, 0);
+  const total = subtotal + delivery;
 
   const [savedAddresses, setSavedAddresses] = useState([]);
   useEffect(() => {
     api.get('/addresses').then((res) => setSavedAddresses(res.data)).catch(() => {});
   }, []);
+
+  // Default the delivery name/phone to the logged-in account so the order
+  // (and its confirmation email) is unambiguously tied to whoever is
+  // actually logged in — still editable for a different recipient.
+  useEffect(() => {
+    if (!user) return;
+    setForm((f) => ({
+      ...f,
+      fullName: f.fullName || user.name || '',
+      phone: f.phone || user.phone || '',
+    }));
+  }, [user]);
 
   const useSavedAddress = (a) => {
     setForm((f) => ({
@@ -51,25 +60,6 @@ export default function Checkout() {
       postalCode: a.postalCode || '',
     }));
     toast.success('Address filled in');
-  };
-
-  const applyCoupon = async () => {
-    if (!couponInput.trim()) return;
-    setApplyingCoupon(true);
-    try {
-      const { data } = await api.post('/coupons/validate', { code: couponInput.trim(), subtotal });
-      setCoupon({ code: data.code, discount: data.discount });
-      toast.success(`Coupon applied: -Rs. ${data.discount.toLocaleString()}`);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Invalid coupon code');
-    } finally {
-      setApplyingCoupon(false);
-    }
-  };
-
-  const removeCoupon = () => {
-    setCoupon(null);
-    setCouponInput('');
   };
 
   const addressComplete = ['fullName', 'phone', 'city', 'area', 'address'].every((k) => form[k].trim());
@@ -92,7 +82,7 @@ export default function Checkout() {
     try {
       const { data } = await api.post('/orders', {
         items: items.map((i) => ({ product: i._id, qty: i.qty, price: i.price })),
-        subtotal, delivery, total, couponCode: coupon?.code, ...form,
+        subtotal, delivery, total, ...form,
       });
       clearCart();
       toast.success('Order placed!');
@@ -125,7 +115,7 @@ export default function Checkout() {
       {reviewing ? (
         <div className="max-w-2xl mx-auto text-left">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-semibold">Review Your Order</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-semibold">Review Your Order</h1>
             <button
               onClick={() => setReviewing(false)}
               className="flex items-center gap-1 text-sm text-black/60 hover:text-black"
@@ -135,7 +125,7 @@ export default function Checkout() {
           </div>
           <p className="text-sm text-black/50 mb-6">Please check everything below before confirming.</p>
 
-          <div className="border rounded-lg p-5 mb-4">
+          <div className="border border-black/10 rounded-2xl p-5 mb-4 bg-white">
             <h2 className="font-medium mb-3">Items</h2>
             <div className="divide-y">
               {items.map((i) => (
@@ -148,21 +138,18 @@ export default function Checkout() {
             <div className="border-t mt-2 pt-2 space-y-1 text-sm">
               <div className="flex justify-between"><span>Subtotal</span><span>Rs. {subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between"><span>Delivery</span><span>{delivery === 0 ? 'Free' : `Rs. ${delivery}`}</span></div>
-              {coupon && (
-                <div className="flex justify-between text-green-600"><span>Coupon ({coupon.code})</span><span>-Rs. {discount.toLocaleString()}</span></div>
-              )}
               <div className="flex justify-between font-semibold text-base"><span>Total</span><span>Rs. {total.toLocaleString()}</span></div>
             </div>
           </div>
 
-          <div className="border rounded-lg p-5 mb-4">
+          <div className="border border-black/10 rounded-2xl p-5 mb-4 bg-white">
             <h2 className="font-medium mb-3">Delivery Address</h2>
             <p className="text-sm">{form.fullName} — {form.phone}</p>
             <p className="text-sm text-black/70">{form.address}, {form.area}, {form.city} {form.postalCode}</p>
             {form.notes && <p className="text-sm text-black/50 mt-1">Note: {form.notes}</p>}
           </div>
 
-          <div className="border rounded-lg p-5 mb-6">
+          <div className="border border-black/10 rounded-2xl p-5 mb-6 bg-white">
             <h2 className="font-medium mb-2">Payment Method</h2>
             <p className="text-sm">{selectedPayment.label}</p>
             {isWalletPayment && (
@@ -179,7 +166,7 @@ export default function Checkout() {
           <button
             onClick={onConfirm}
             disabled={placing}
-            className="w-full bg-black text-white py-3 rounded uppercase text-sm tracking-wide disabled:opacity-50"
+            className="w-full bg-black text-white py-3.5 rounded-full uppercase text-sm tracking-wide font-medium hover:bg-[var(--color-black-soft)] transition-colors disabled:opacity-50"
           >
             {placing ? 'Placing order...' : 'Confirm & Place Order'}
           </button>
@@ -187,7 +174,7 @@ export default function Checkout() {
       ) : (
         <div className="grid md:grid-cols-3 gap-8">
           <form onSubmit={onReview} className="md:col-span-2 space-y-4 text-left">
-            <h1 className="text-2xl font-semibold mb-4">Checkout</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-semibold mb-4">Checkout</h1>
 
             {savedAddresses.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
@@ -204,8 +191,8 @@ export default function Checkout() {
               </div>
             )}
 
-            <input required placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inputClass} />
-            <input required placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
+            <input required autoComplete="off" placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inputClass} />
+            <input required autoComplete="off" placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
             <div className="grid grid-cols-2 gap-4">
               <input required placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inputClass} />
               <input required placeholder="Area" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} className={inputClass} />
@@ -214,12 +201,12 @@ export default function Checkout() {
             <input placeholder="Postal code" value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: e.target.value })} className={inputClass} />
             <textarea placeholder="Order notes (optional)" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={inputClass} rows={2} />
 
-            <div className="border rounded-lg p-4 space-y-2">
+            <div className="border border-black/10 rounded-2xl p-4 space-y-2 bg-white">
               <p className="font-medium mb-1">Payment Method</p>
               {paymentOptions.map((opt) => (
                 <label
                   key={opt.id}
-                  className={`flex items-start gap-3 border rounded-lg p-3 cursor-pointer transition-colors ${
+                  className={`flex items-start gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
                     form.paymentMethod === opt.id ? 'border-[var(--color-gold)] bg-[var(--color-gold)]/5' : 'border-black/10'
                   }`}
                 >
@@ -239,7 +226,7 @@ export default function Checkout() {
 
               {isWalletPayment && (
                 <div className="pt-1 space-y-3">
-                  <div className="bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/30 rounded-lg p-4">
+                  <div className="bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/30 rounded-xl p-4">
                     <p className="text-sm font-medium mb-2">Pay Rs. {total.toLocaleString()} now to confirm your order</p>
                     <ol className="text-sm text-black/70 list-decimal list-inside space-y-1 mb-3">
                       <li>Open your {form.paymentMethod} app</li>
@@ -248,7 +235,7 @@ export default function Checkout() {
                       </li>
                       <li>Come back and enter your number + the transaction ID</li>
                     </ol>
-                    <div className="flex items-center gap-2 bg-white border rounded px-3 py-2">
+                    <div className="flex items-center gap-2 bg-white border border-black/10 rounded-lg px-3 py-2">
                       <span className="font-semibold tracking-wide flex-1">{WALLET_NUMBER}</span>
                       <button
                         type="button"
@@ -288,13 +275,13 @@ export default function Checkout() {
               )}
             </div>
 
-            <button className="w-full bg-black text-white py-3 rounded uppercase text-sm tracking-wide">
+            <button className="w-full bg-black text-white py-3.5 rounded-full uppercase text-sm tracking-wide font-medium hover:bg-[var(--color-black-soft)] transition-colors">
               Review Order
             </button>
           </form>
 
-          <div className="border rounded-lg p-6 h-fit text-left">
-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+          <div className="border border-black/10 rounded-2xl p-6 h-fit text-left bg-white">
+            <h2 className="font-display text-lg font-semibold mb-4">Order Summary</h2>
             {items.map((i) => (
               <div key={i._id} className="flex justify-between text-sm mb-2">
                 <span>{i.name} x{i.qty}</span>
@@ -302,37 +289,8 @@ export default function Checkout() {
               </div>
             ))}
 
-            {coupon ? (
-              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded px-3 py-2 my-3 text-sm">
-                <span className="flex items-center gap-1 text-green-700"><FiTag size={13} /> {coupon.code} applied</span>
-                <button type="button" onClick={removeCoupon} className="text-green-700 hover:text-red-500">
-                  <FiX size={14} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2 my-3">
-                <input
-                  placeholder="Coupon code"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                  className="flex-1 border rounded px-3 py-1.5 text-sm focus:outline-none focus:border-[var(--color-gold)]"
-                />
-                <button
-                  type="button"
-                  onClick={applyCoupon}
-                  disabled={applyingCoupon}
-                  className="border border-black rounded px-3 py-1.5 text-sm hover:bg-black hover:text-white transition-colors disabled:opacity-50"
-                >
-                  {applyingCoupon ? '...' : 'Apply'}
-                </button>
-              </div>
-            )}
-
-            <div className="flex justify-between mb-2 text-sm border-t pt-2"><span>Subtotal</span><span>Rs. {subtotal.toLocaleString()}</span></div>
+            <div className="flex justify-between mb-2 text-sm border-t pt-2 mt-3"><span>Subtotal</span><span>Rs. {subtotal.toLocaleString()}</span></div>
             <div className="flex justify-between mb-2 text-sm"><span>Delivery</span><span>{delivery === 0 ? 'Free' : `Rs. ${delivery}`}</span></div>
-            {coupon && (
-              <div className="flex justify-between mb-2 text-sm text-green-600"><span>Discount</span><span>-Rs. {discount.toLocaleString()}</span></div>
-            )}
             <div className="flex justify-between font-semibold text-lg border-t pt-3"><span>Total</span><span>Rs. {total.toLocaleString()}</span></div>
           </div>
         </div>

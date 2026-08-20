@@ -47,15 +47,20 @@ export default function MyOrders() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">My Orders</h1>
+      <p className="uppercase tracking-[4px] text-[var(--color-gold)] text-xs mb-1.5">Order History</p>
+      <h1 className="font-display text-3xl font-semibold mb-6">My Orders</h1>
       <div className="space-y-3">
         {orders.map((o) => (
-          <Link to={`/orders/${o._id}`} key={o._id} className="flex justify-between items-center border rounded-lg p-4">
+          <Link
+            to={`/orders/${o._id}`}
+            key={o._id}
+            className="flex justify-between items-center border border-black/10 rounded-2xl p-4 bg-white hover:border-[var(--color-gold)] hover:-translate-y-0.5 transition-all"
+          >
             <div className="text-left">
               <p className="font-medium">Order #{o.orderNumber}</p>
-              <p className="text-sm text-black/60">{new Date(o.createdAt).toLocaleDateString()} — Rs. {o.total?.toLocaleString()}</p>
+              <p className="text-sm text-black/50">{new Date(o.createdAt).toLocaleDateString()} — Rs. {o.total?.toLocaleString()}</p>
             </div>
-            <span className={`text-xs px-3 py-1 rounded-full ${statusColor[o.status] || 'bg-gray-100'}`}>{o.status}</span>
+            <span className={`text-xs px-3 py-1.5 rounded-full font-medium ${statusColor[o.status] || 'bg-gray-100'}`}>{o.status}</span>
           </Link>
         ))}
       </div>
