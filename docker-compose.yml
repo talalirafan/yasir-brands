@@ -1,0 +1,30 @@
+services:
+  backend1:
+    build: ./backend
+    env_file: ./backend/.env
+    volumes:
+      - uploads:/app/uploads
+    restart: unless-stopped
+
+  backend2:
+    build: ./backend
+    env_file: ./backend/.env
+    volumes:
+      - uploads:/app/uploads
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend1
+      - backend2
+    restart: unless-stopped
+
+volumes:
+  # Shared so an image uploaded via backend1 is still visible when Nginx
+  # routes a later request to backend2 (and vice versa).
+  uploads:
