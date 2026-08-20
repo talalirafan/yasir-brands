@@ -73,7 +73,7 @@ async function main() {
   if (!existingAdmin) {
     const hashed = await bcrypt.hash(adminPassword, 10);
     await db.collection('users').insertOne({
-      name: 'YSR Admin',
+      name: 'Yasir Admin',
       email: adminEmail,
       phone: '03000000000',
       password: hashed,
