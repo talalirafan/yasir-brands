@@ -8,6 +8,7 @@ import { Cart, CartSchema } from '../cart/schemas/cart.schema';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { CouponsModule } from '../coupons/coupons.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CouponsModule } from '../coupons/coupons.module';
     AuthModule,
     NotificationsModule,
     CouponsModule,
+    UsersModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

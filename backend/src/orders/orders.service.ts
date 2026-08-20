@@ -7,6 +7,7 @@ import { Cart, CartDocument } from '../cart/schemas/cart.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CouponsService } from '../coupons/coupons.service';
+import { UsersService } from '../users/users.service';
 
 const DELIVERY_FEE = 250;
 const FREE_DELIVERY_THRESHOLD = 5000;
@@ -19,6 +20,7 @@ export class OrdersService {
     @InjectModel(Cart.name) private cartModel: Model<CartDocument>,
     private notificationsService: NotificationsService,
     private couponsService: CouponsService,
+    private usersService: UsersService,
   ) {}
 
   private generateOrderNumber() {
@@ -81,7 +83,10 @@ export class OrdersService {
     await this.cartModel.findOneAndUpdate({ user: userId }, { items: [] });
 
     // Fire-and-forget: don't block order response on notification delivery.
-    this.notificationsService.notifyNewOrder(order).catch(() => {});
+    this.usersService
+      .findById(userId)
+      .then((customer) => this.notificationsService.notifyNewOrder(order, customer?.email))
+      .catch(() => this.notificationsService.notifyNewOrder(order).catch(() => {}));
 
     return order;
   }
